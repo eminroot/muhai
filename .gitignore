@@ -1,0 +1,31 @@
+# --- compose ---
+# The stack's whole configuration, including SECRET_KEY. Never commit it.
+.env
+
+# --- web frontend ---
+node_modules
+dist
+dist-ssr
+*.local
+.env.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- backend ---
+backend/.env
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# --- editors / os ---
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+
+# --- database dumps ---
+# The roles dump carries a SCRAM verifier for the `muhai` superuser and the
+# full dump carries account rows. Neither belongs in a public repository.
+db_backup/

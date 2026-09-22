@@ -1,0 +1,563 @@
+/* ============================================================
+   Components — the console register of the Repilay language.
+
+   Separation comes from a surface step and a hairline INSET ring,
+   not from a border plus a drop shadow. Radii nest downward:
+   tray 12, panel 10, card 8, control 6. Colour is a tint pill and
+   nothing else — the card behind a status stays white.
+   ============================================================ */
+
+/* ---------------------------------------------------- helpers -- */
+
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.spread { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.grow { flex: 1; min-width: 0; }
+.divider { height: 1px; background: var(--rule); margin: 22px 0; }
+.grid { display: grid; gap: 12px; }
+
+/* ---------------------------------------------- panel / card -- */
+
+.card,
+.panel {
+  background: var(--surface);
+  border-radius: var(--r-panel);
+  box-shadow: var(--shadow-1);
+}
+
+.panel { padding: 16px 18px; }
+.panel-warm { background: var(--surface-tray); box-shadow: inset 0 0 0 1px var(--tray-ring); }
+
+.panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.011em;
+  color: var(--text-heading);
+}
+
+.panel-title svg { color: var(--ink-3); flex: 0 0 auto; }
+.panel-sub { font-size: 12.5px; color: var(--text-muted); margin-top: 4px; letter-spacing: -0.003em; }
+
+.section { margin-top: 34px; }
+
+/* --------------------------------------------------- figures -- */
+
+.stat-card {
+  background: var(--surface);
+  border-radius: var(--r-panel);
+  padding: 16px 18px 18px;
+  box-shadow: var(--shadow-1);
+  position: relative;
+  transition: background 200ms var(--ease);
+}
+
+/* No lift on hover. Interactive things here change colour, never height. */
+.stat-card:hover { background: var(--surface-hover); }
+
+.stat-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-card__icon {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border-radius: var(--r-card);
+  display: grid;
+  place-items: center;
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+}
+
+.stat-card__label {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  text-transform: none;
+  color: var(--text-tertiary);
+}
+
+/* Cal Sans, the display face. Never a serif — a big serif number is the
+   loudest AI tell in the business. */
+.stat-card__value {
+  margin-top: 10px;
+  font-family: var(--display);
+  font-synthesis: none;
+  font-size: 30px;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  color: var(--text-heading);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-card__foot { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+
+/* The arrow follows the sign of the change; the tone follows whether that
+   sign is good news. Expenses falling is an ok down-arrow. */
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.delta--pos { color: var(--ok); background: var(--ok-bg); border-color: var(--ok-line); }
+.delta--neg { color: var(--stop); background: var(--stop-bg); border-color: var(--stop-line); }
+
+/* ----------------------------------------------- status pills -- */
+
+/* A tint fill with ink text and no outline. This is the only place a
+   fill of colour is allowed — map a domain status to a tone in one
+   place, not at each call site. The card behind it stays white. */
+.badge,
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.003em;
+  white-space: nowrap;
+}
+
+/* No dot. A Repilay tag is the tint and the word, nothing else. */
+.badge__dot { display: none; }
+
+.badge--green, .pill.ok { color: var(--ok); background: var(--ok-bg); border-color: var(--ok-line); }
+.badge--amber, .pill.warn { color: var(--warn); background: var(--warn-bg); border-color: var(--warn-line); }
+.badge--red, .pill.stop { color: var(--stop); background: var(--stop-bg); border-color: var(--stop-line); }
+.badge--sky, .pill.cool { color: var(--cool); background: var(--cool-bg); border-color: var(--cool-line); }
+.badge--gray, .pill.mute { color: var(--tag-slate-ink); background: var(--tag-slate-tint); }
+
+.pill svg { flex: 0 0 auto; }
+
+/* --------------------------------------------------- buttons -- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--r-card);
+  background: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: -0.006em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 140ms var(--ease), border-color 140ms var(--ease),
+              color 140ms var(--ease), opacity 140ms var(--ease), transform 140ms var(--ease);
+}
+
+.btn:active:not(:disabled) { transform: scale(0.975); }
+.btn:disabled { opacity: 0.42; cursor: not-allowed; }
+.btn svg { flex: 0 0 auto; }
+
+/* The warm accent is the one filled button in the system, and it stays
+   rare: two or three on a screen, never one per card. */
+.btn--primary {
+  background: var(--accent);
+  color: var(--text-inverted);
+  box-shadow: var(--shadow-button);
+}
+
+.btn--primary:not(:disabled):hover { background: var(--accent-hover); }
+
+/* A ring, not a border, so an edge cannot double up with a card's. */
+.btn--ghost { background: var(--surface); color: var(--text-heading); box-shadow: var(--shadow-ring); }
+.btn--ghost:not(:disabled):hover { background: var(--surface-hover); }
+
+.btn--quiet { color: var(--text-secondary); padding: 6px 10px; }
+.btn--quiet:not(:disabled):hover { color: var(--text-heading); background: var(--surface-subtle); }
+
+/* Tinted, not outlined: destructive should be legible, not loud. */
+.btn--danger { color: var(--tag-red-ink); background: var(--tag-red-tint); }
+.btn--danger:not(:disabled):hover { background: var(--tint-red); }
+
+.btn--sm { padding: 5px 10px; font-size: 12.5px; border-radius: var(--r-control); }
+
+/* The landing register: a pill, 48px tall. Only marketing surfaces use it. */
+.btn--lg { padding: 0 24px; height: 48px; font-size: 15px; border-radius: 999px; letter-spacing: -0.03em; }
+.btn--block { width: 100%; justify-content: center; height: 44px; }
+
+/* A verb with an arrow, for going somewhere rather than doing something. */
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: -0.006em;
+  transition: color 200ms var(--ease), gap 200ms var(--ease);
+}
+
+.link-btn:hover { color: var(--accent); gap: 7px; }
+.link-btn svg { color: var(--text-muted); }
+.link-btn:hover svg { color: var(--accent); }
+
+.icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-card);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.icon-btn:hover { background: var(--surface-subtle); color: var(--text-heading); }
+.icon-btn--danger:hover { background: var(--tag-red-tint); color: var(--tag-red-ink); }
+.icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---------------------------------------------------- tables -- */
+
+/* These tables run to nine columns. On a 375px phone the panel is ~341px
+   wide while the table needs 684px, so without a scroll container of its
+   own the table drags the whole page sideways. Squashing it is not an
+   option: the cells hold currency and dates that must stay readable. */
+.tbl-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tbl { width: 100%; border-collapse: collapse; }
+
+/* A blurred head the rows scroll under, not a grey band with a rule
+   above and below it. Sentence case — letter-spaced caps read as a
+   different product entirely. */
+.tbl th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.003em;
+  text-transform: none;
+  color: var(--text-muted);
+  padding: 9px 12px;
+  background: var(--glass-fill);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  box-shadow: inset 0 -1px 0 var(--border-default);
+  white-space: nowrap;
+}
+
+.tbl td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 13px;
+  letter-spacing: -0.006em;
+  color: var(--text-secondary);
+  vertical-align: middle;
+}
+
+.tbl tbody tr { transition: background 120ms var(--ease); }
+.tbl tbody tr:hover td { background: var(--surface-row-hover); }
+.tbl tbody tr:last-child td { border-bottom: none; }
+
+/* Rounded row ends, so a hovered row reads as one object rather than a
+   stripe running off both edges of the panel. */
+.tbl tbody td:first-child { border-radius: var(--r-card) 0 0 var(--r-card); }
+.tbl tbody td:last-child { border-radius: 0 var(--r-card) var(--r-card) 0; }
+.tbl .num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* One column carries the row's identity and is the only one at full ink. */
+.tbl .strong { color: var(--text-heading); font-weight: 600; }
+.tbl .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+@media (max-width: 760px) {
+  /* Below the wrapper's minimum the table scrolls rather than compresses.
+     Tighter cell padding buys back roughly a column's worth of width. */
+  .tbl { min-width: 600px; }
+  .tbl th { padding: 9px 10px; }
+  .tbl td { padding: 10px; font-size: 12.5px; }
+}
+
+/* ---------------------------------------------------- legend -- */
+
+.legend { display: flex; flex-direction: column; gap: 9px; }
+
+.legend__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  gap: 12px;
+}
+
+.legend__left { display: flex; align-items: center; gap: 8px; color: var(--ink-2); }
+.legend__swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.legend__val { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* ----------------------------------------------- chart chrome -- */
+
+.chart-wrap { width: 100%; }
+
+.chart-empty {
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  border-radius: var(--r-panel);
+  background: var(--surface-sunken);
+}
+
+.chart-tip {
+  position: absolute;
+  top: 6px;
+  background: var(--surface-inverted);
+  color: var(--text-inverted);
+  border-radius: var(--r-panel);
+  padding: 9px 12px;
+  font-size: 12px;
+  box-shadow: var(--shadow-3);
+  pointer-events: none;
+  z-index: 6;
+  min-width: 148px;
+}
+
+.chart-tip__head {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-inverted-muted);
+  text-transform: none;
+  letter-spacing: -0.003em;
+  margin-bottom: 6px;
+}
+
+.chart-tip__row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.chart-tip__swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.chart-tip__name { color: var(--text-inverted-secondary); }
+.chart-tip__val { margin-left: auto; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.chart-tip__range {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 11px;
+  color: var(--text-inverted-muted);
+}
+
+/* ------------------------------------------------ score gauge -- */
+
+.gauge { position: relative; display: grid; place-items: center; }
+.gauge svg { position: absolute; top: 0; left: 0; }
+
+.gauge__center {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 12px;
+}
+
+.gauge__value {
+  font-family: var(--display);
+  font-synthesis: none;
+  font-size: 38px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--text-heading);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.gauge__label { font-size: 12px; color: var(--text-muted); margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+.score-row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+.score-cats { list-style: none; flex: 1; min-width: 190px; display: flex; flex-direction: column; gap: 11px; }
+.score-cats li { display: flex; align-items: center; gap: 10px; font-size: 12.5px; }
+.score-cats__label { color: var(--ink-2); width: 108px; flex-shrink: 0; }
+
+.score-cats__bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.score-cats__bar i { display: block; height: 100%; border-radius: 999px; }
+.score-cats__val { width: 26px; text-align: right; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.score-reco {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* -------------------------------------------------- popovers -- */
+
+.topbar__pop-anchor { position: relative; }
+
+.popover {
+  position: absolute;
+  top: calc(100% + 9px);
+  left: 0;
+  min-width: 250px;
+  max-width: 340px;
+  background: var(--surface);
+  border-radius: var(--r-panel);
+  box-shadow: var(--shadow-ring), var(--shadow-3);
+  padding: 4px;
+  z-index: 60;
+  max-height: 340px;
+  overflow-y: auto;
+  animation: dash-menu-in 140ms var(--ease) both;
+}
+
+@keyframes dash-menu-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.popover--right { left: auto; right: 0; }
+.popover--search { width: 100%; }
+
+.popover__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+  padding: 7px 10px;
+  border-radius: var(--r-control);
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.popover__row:hover { background: var(--surface-subtle); color: var(--text-heading); }
+.popover__row svg { color: var(--ink-3); margin-top: 2px; flex: 0 0 auto; }
+.popover__row--danger { color: var(--stop); }
+.popover__row--danger svg { color: var(--stop); }
+.popover__row--danger .popover__title { color: var(--stop); }
+.popover__title { display: block; font-size: 13px; font-weight: 500; color: var(--text-heading); }
+.popover__meta { display: block; font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+
+.popover__dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 7px; }
+.popover__dot--stop { background: var(--stop); }
+.popover__dot--warn { background: var(--warn); }
+.popover__empty { padding: 18px; text-align: center; font-size: 13px; color: var(--ink-4); }
+
+/* --------------------------------------------------- notices -- */
+
+/* The glyph carries the tone before the words do. */
+.notice {
+  display: flex;
+  gap: 11px;
+  padding: 12px 15px;
+  border-radius: var(--r-panel);
+  background: var(--surface-sunken);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.notice > svg { flex: 0 0 auto; margin-top: 2px; color: var(--ink-3); }
+.notice strong { color: var(--ink); font-weight: 600; }
+.notice--warn { background: var(--tag-amber-tint); color: var(--tag-amber-ink); }
+.notice--info { background: var(--tag-blue-tint); color: var(--tag-blue-ink); }
+.notice--error { background: var(--tag-red-tint); color: var(--tag-red-ink); }
+.notice--warn strong, .notice--info strong, .notice--error strong { color: currentColor; }
+.notice--warn > svg, .notice--info > svg, .notice--error > svg { color: currentColor; }
+
+/* ------------------------------------------------- skeletons -- */
+
+.skel {
+  border-radius: var(--r-panel);
+  background: linear-gradient(90deg, var(--surface-sunken) 25%, var(--surface-subtle) 50%, var(--surface-sunken) 75%);
+  background-size: 400% 100%;
+  animation: skel-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes skel-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+
+.skel--title { height: 34px; width: 280px; margin-bottom: 12px; }
+.skel--sub { height: 16px; width: 380px; max-width: 80%; }
+.skel--card { height: 132px; }
+.skel--band { height: 218px; }
+.skel--panel { height: 280px; }
+
+/* ----------------------------------------------- empty state -- */
+
+/* A bare "no results" is the laziest thing on a page: every empty state
+   gets a glyph, a title, a note and at most one action. */
+.empty-state {
+  max-width: 460px;
+  margin: 12vh auto;
+  padding: 48px 24px;
+  text-align: center;
+  border-radius: var(--r-tray);
+  box-shadow: var(--shadow-1);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.empty-state__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--r-tray);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+}
+
+.empty-state h2 {
+  font-family: var(--display);
+  font-synthesis: none;
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--text-heading);
+}
+
+.empty-state p { color: var(--text-body); font-size: 14px; line-height: 1.5; letter-spacing: -0.03em; }
+.empty-state .btn { margin-top: 6px; }
+
+/* --------------------------------------------------- spinner -- */
+
+.spin { animation: muhai-spin 620ms linear infinite; }
+@keyframes muhai-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 600px) { .panel { padding: 14px; } }

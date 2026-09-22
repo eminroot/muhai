@@ -1,0 +1,8 @@
+# Vendored Tesseract assets — byte-for-byte, never line-ending-normalised.
+# The core files carry the wasm binary inlined as base64 inside a JS string,
+# so a CRLF rewrite on checkout would corrupt them.
+web/public/tessdata/** -text
+
+*.traineddata   binary
+*.gz            binary
+*.wasm          binary

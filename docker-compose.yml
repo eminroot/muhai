@@ -1,0 +1,143 @@
+# ============================================================
+# Muhai — the whole system, in containers.
+#
+#     docker compose up -d --build
+#
+# brings up Postgres, the schema migration, the API and the web app. Nothing
+# else has to be installed on the host: no Python, no Node, no Postgres, no
+# Firebase project. That is the point — a VPS needs only Docker and this file.
+#
+# There is no queue. A Celery worker and a Redis broker used to sit here; the
+# worker never received a task (server OCR answers in ~0.3 s, so nothing was
+# worth deferring) and Redis existed only to feed it. Both were removed on
+# 2026-09-13 — recover them from commit 5c91e18 if background jobs ever earn
+# their keep.
+#
+# Ports: only the web app is published, on WEB_PORT (default 80). Postgres and
+# the API are reachable on the internal `muhai` network and nowhere else, so
+# nothing is exposed to the internet that does not need to be. nginx
+# in the web container reverse-proxies /api to the backend, which is also why
+# the browser needs no CORS grant and no API hostname.
+#
+# The project name is pinned (N2 in CLAUDE.md) so `postgres_data` keeps
+# resolving to the existing `muhai_postgres_data` volume. Renaming it orphans
+# the database.
+#
+# docker-compose.override.yml sits alongside this file and is applied
+# automatically by a bare `docker compose up`. It is the development layer —
+# source bind-mounts, --reload, published database ports. On the VPS run with
+# `-f docker-compose.yml` alone so none of that applies.
+# ============================================================
+
+name: muhai
+
+x-backend-image: &backend-image
+  image: muhai-backend:latest
+  build:
+    context: ./backend
+    # Declared alongside `image:` so an existing image is reused instead of
+    # rebuilt on every `up` (N1). Rebuild explicitly when requirements.txt or
+    # the Dockerfile changes.
+    target: runtime
+
+x-backend-env: &backend-env
+  DATABASE_URL: "postgresql+asyncpg://${POSTGRES_USER:-muhai}:${POSTGRES_PASSWORD:-muhai_secret}@postgres:5432/${POSTGRES_DB:-muhai}"
+  # Compose fails fast rather than starting the stack with an unset secret.
+  SECRET_KEY: "${SECRET_KEY:?SECRET_KEY is missing from .env — generate one with `openssl rand -hex 32`}"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "${ACCESS_TOKEN_EXPIRE_MINUTES:-10080}"
+  BACKEND_CORS_ORIGINS: "${BACKEND_CORS_ORIGINS:-http://localhost,http://localhost:5173}"
+  COMPUTE_AUTH_REQUIRED: ${COMPUTE_AUTH_REQUIRED:-true}
+  # Empty switches /api/auth/google off; it then answers 503.
+  FIREBASE_PROJECT_ID: ${FIREBASE_PROJECT_ID:-cyberxbank-7dc0b}
+  GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+  GEMINI_MODEL: ${GEMINI_MODEL:-}
+  OCR_LANG: ${OCR_LANG:-tur}
+  # The `migrate` service owns the schema; app containers must not race it.
+  RUN_MIGRATIONS_ON_STARTUP: "false"
+
+services:
+  # ── Data ───────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:15
+    container_name: muhai_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-muhai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-muhai_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-muhai}
+      # Keeps `docker compose down -v` from being the only way to fix a
+      # locale mismatch on a restored dump.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-muhai} -d ${POSTGRES_DB:-muhai}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks: [muhai]
+
+  # ── Schema ─────────────────────────────────────────────────────────
+  # One-shot: runs to completion, then the API and worker start. Doing this
+  # here rather than in each app container means several uvicorn workers can
+  # never race each other applying the same revision.
+  migrate:
+    <<: *backend-image
+    container_name: muhai_migrate
+    command: alembic upgrade head
+    environment:
+      <<: *backend-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    networks: [muhai]
+
+  # ── Application ────────────────────────────────────────────────────
+  backend:
+    <<: *backend-image
+    container_name: muhai_backend
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0 --port 8000
+      --workers ${API_WORKERS:-2}
+      --proxy-headers --forwarded-allow-ips=*
+    environment:
+      <<: *backend-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      start_period: 40s
+      retries: 5
+    restart: unless-stopped
+    networks: [muhai]
+
+  web:
+    image: muhai-web:latest
+    build:
+      context: ./web
+      target: runtime
+      args:
+        # Empty: the bundle calls /api on its own origin and nginx proxies it.
+        VITE_API_URL: ${VITE_API_URL:-}
+    container_name: muhai_web
+    ports:
+      - "${WEB_PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
+    networks: [muhai]
+
+networks:
+  muhai:
+    driver: bridge
+
+volumes:
+  postgres_data:

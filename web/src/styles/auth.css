@@ -1,0 +1,385 @@
+/* ============================================================
+   Auth screens: the centred tray, and the shared form controls.
+
+   Two cards in one tray — the pitch and the form — exactly the
+   way the rest of the system composes a pair of panels. This
+   file also holds the field primitives used by the in-app
+   sheets, so a field looks identical whether it is on /register
+   or inside the invoice editor.
+
+   Fields are SUNKEN and borderless with a red focus ring. An
+   outlined input with a blue ring is the generic default this
+   replaces, and it is the single fastest way to lose the look.
+   ============================================================ */
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-canvas);
+}
+
+.auth-page__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  max-width: 1040px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (min-width: 810px) { .auth-page__bar { padding: 20px 64px; } }
+
+.auth-page__body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 24px 64px;
+}
+
+@media (min-width: 810px) { .auth-page__body { padding: 24px 64px 80px; } }
+
+/* -------------------------------------------------- the tray -- */
+
+.tray.auth-tray {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  max-width: 940px;
+  align-items: stretch;
+}
+
+.tray.auth-tray--wide { max-width: 1040px; }
+
+@media (max-width: 1000px) {
+  .tray.auth-tray { grid-template-columns: 1fr; max-width: 520px; }
+  .auth-pitch { display: none; }
+}
+
+/* ------------------------------------------------- the pitch -- */
+
+.auth-pitch {
+  background: var(--panel-steel);
+  border-radius: var(--lp-r-slab-lg);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+}
+
+.auth-pitch__title {
+  font-family: var(--display);
+  font-synthesis: none;
+  font-size: clamp(24px, 2.4vw, 30px);
+  line-height: 1.2;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--slate-900);
+  max-width: 18ch;
+}
+
+:root[data-theme='dark'] .auth-pitch__title { color: var(--text-heading); }
+
+.auth-highlights { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+.auth-highlights li { display: flex; gap: 12px; align-items: flex-start; }
+
+.auth-highlights__icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  margin-top: 2px;
+  border-radius: 50%;
+  background: var(--tag-green-tint);
+  color: var(--tag-green-ink);
+  display: grid;
+  place-items: center;
+}
+
+.auth-highlights strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--slate-900);
+}
+
+.auth-highlights em {
+  display: block;
+  font-style: normal;
+  font-size: 13px;
+  letter-spacing: -0.03em;
+  color: var(--slate-700);
+  margin-top: 2px;
+  line-height: 1.45;
+}
+
+:root[data-theme='dark'] .auth-highlights strong { color: var(--text-heading); }
+:root[data-theme='dark'] .auth-highlights em { color: var(--text-body); }
+
+.auth-pitch__foot {
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.003em;
+  color: var(--slate-600);
+  margin-top: auto;
+}
+
+:root[data-theme='dark'] .auth-pitch__foot { color: var(--text-muted); }
+
+/* -------------------------------------------------- the form -- */
+
+.auth-card {
+  background: var(--surface-canvas);
+  border-radius: var(--lp-r-slab-lg);
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@media (min-width: 810px) { .auth-card { padding: 40px; } }
+
+.auth-card__title {
+  font-family: var(--display);
+  font-synthesis: none;
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--text-heading);
+}
+
+.auth-card__sub {
+  color: var(--text-body);
+  font-size: 15px;
+  letter-spacing: -0.03em;
+  margin: 8px 0 28px;
+}
+
+/* ---------------------------------------------------- steps -- */
+
+.auth-steps { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+
+.auth-steps__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  letter-spacing: -0.006em;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.auth-steps__item b {
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.auth-steps__item.is-active { color: var(--text-heading); }
+.auth-steps__item.is-active b { background: var(--accent); color: var(--text-inverted); }
+.auth-steps__item.is-done b { background: var(--tag-green-tint); color: var(--tag-green-ink); }
+.auth-steps__bar { flex: 1; height: 1px; background: var(--border-default); }
+
+/* ----------------------------------------------------- form -- */
+
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+
+.field { display: flex; flex-direction: column; gap: 8px; }
+
+/* Not uppercase: a plain small noun in secondary ink. */
+.field__label {
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  text-transform: none;
+  color: var(--text-secondary);
+}
+
+.field__wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-sunken);
+  border: none;
+  border-radius: var(--lp-r-media);
+  padding: 0 16px;
+  height: 46px;
+  color: var(--text-muted);
+  transition: box-shadow 200ms var(--ease), background 200ms var(--ease);
+}
+
+.field__wrap:hover { background: var(--surface-subtle); }
+
+/* A 2px red ring. No blue, no soft halo, no border colour change. */
+.field__wrap:focus-within {
+  background: var(--surface-sunken);
+  box-shadow: 0 0 0 2px var(--brand-red);
+  color: var(--text-tertiary);
+}
+
+.field__wrap input,
+.field__wrap select,
+.field__wrap textarea {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 15px;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  min-width: 0;
+  height: 100%;
+}
+
+.field__wrap select { cursor: pointer; }
+.field__wrap input::placeholder { color: var(--text-muted); }
+.field__hint { font-size: 12.5px; letter-spacing: -0.003em; color: var(--text-muted); }
+
+/* The classifier explaining itself: why this category was pre-filled. */
+.field__hint--learn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 520px) { .field-row { grid-template-columns: 1fr; } }
+
+.checkbox-row {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  padding: 14px;
+  border: none;
+  border-radius: var(--lp-r-media);
+  background: var(--surface-sunken);
+  cursor: pointer;
+  transition: background 200ms var(--ease);
+}
+
+.checkbox-row:hover { background: var(--surface-subtle); }
+.checkbox-row input { margin-top: 2px; width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+
+.checkbox-row strong {
+  display: block;
+  font-size: 14px;
+  letter-spacing: -0.03em;
+  color: var(--text-heading);
+  font-weight: 600;
+}
+
+.checkbox-row em {
+  display: block;
+  font-style: normal;
+  font-size: 13px;
+  letter-spacing: -0.03em;
+  color: var(--text-body);
+  margin-top: 3px;
+  line-height: 1.45;
+}
+
+.auth-actions { display: flex; gap: 10px; }
+.auth-actions .btn { flex: 1; justify-content: center; }
+
+/* Tint and ink, no outline — the same tag vocabulary as everywhere else. */
+.auth-alert {
+  border-radius: var(--r-panel);
+  padding: 12px 14px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  letter-spacing: -0.006em;
+}
+
+.auth-alert--error { background: var(--tag-red-tint); color: var(--tag-red-ink); }
+.auth-alert--ok { background: var(--tag-green-tint); color: var(--tag-green-ink); }
+
+.auth-link-center { align-self: center; }
+
+.auth-foot {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 13.5px;
+  letter-spacing: -0.03em;
+  color: var(--text-muted);
+}
+
+.auth-foot a { color: var(--accent); font-weight: 600; }
+.auth-foot a:hover { text-decoration: underline; }
+
+/* -------------------------------------------- route splash -- */
+
+.route-splash {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  background: var(--surface-page);
+}
+
+.route-splash__spinner {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border-default);
+  border-top-color: var(--accent);
+  animation: muhai-spin 620ms linear infinite;
+}
+
+/* ------------------------------------------- sign in with Google -- */
+
+/* A white button held by a hairline ring, the way every secondary action
+   here is. Google's own mark keeps its four colours: it is their brand,
+   not ours to restyle into the accent. */
+.btn--google {
+  gap: 10px;
+  height: 48px;
+  border-radius: var(--lp-r-media);
+  background: var(--surface-canvas);
+  color: var(--text-heading);
+  box-shadow: var(--shadow-ring);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+.btn--google:not(:disabled):hover { background: var(--surface-hover); }
+.btn--google svg { flex: 0 0 auto; }
+
+/* A rule with the word sitting in a gap in it, rather than a line above
+   and a line below. */
+.auth-or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  letter-spacing: -0.03em;
+}
+
+.auth-or::before,
+.auth-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-default);
+}

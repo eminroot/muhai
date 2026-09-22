@@ -1,0 +1,327 @@
+/* ============================================================
+   The site assistant — launcher and welcome panel.
+
+   Modelled on Repilay's own widget: a composer pill beside the
+   orb when closed, and when open a floating card whose header is
+   a centred name badge with the orb and a live dot, flanked by
+   two quiet icon buttons.
+
+   The orb is the one gradient in the system and it belongs to
+   the assistant, so this is the only place on the marketing
+   page where it appears.
+   ============================================================ */
+
+/* -------------------------------------------------- launcher -- */
+
+.sc-launch {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sc-peek {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 6px 0 18px;
+  border-radius: 999px;
+  background: var(--glass-fill);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: var(--shadow-glass-edge), 0 12px 32px -12px rgba(15, 23, 42, 0.22);
+  transition: box-shadow 200ms var(--ease);
+}
+
+.sc-peek:focus-within { box-shadow: var(--shadow-glass-edge), 0 12px 32px -10px rgba(15, 23, 42, 0.3); }
+
+.sc-peek input {
+  width: 168px;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.sc-peek input::placeholder { color: var(--text-muted); }
+
+.sc-peek__go {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  transition: background 200ms var(--ease), color 200ms var(--ease);
+}
+
+.sc-peek__go:hover { background: var(--accent); color: var(--text-inverted); }
+
+.sc-orb {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 48px;
+  cursor: pointer;
+  transition: transform 200ms var(--ease);
+}
+
+.sc-orb:hover { transform: scale(1.06); }
+.sc-orb svg { position: relative; z-index: 1; }
+
+@media (max-width: 640px) {
+  .sc-launch { right: 16px; bottom: 16px; }
+  .sc-peek { display: none; }
+}
+
+/* ----------------------------------------------------- panel -- */
+
+.sc-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 70;
+  width: min(392px, calc(100vw - 32px));
+  height: min(620px, calc(100vh - 64px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--surface-canvas);
+  border-radius: var(--lp-r-panel);
+  box-shadow: var(--shadow-ring), 0 32px 64px -16px rgba(15, 23, 42, 0.3);
+}
+
+@media (max-width: 640px) {
+  .sc-panel { right: 12px; left: 12px; bottom: 12px; width: auto; height: min(560px, calc(100vh - 24px)); }
+}
+
+/* The header is a centred badge between two quiet icon buttons —
+   not a left-aligned avatar row. */
+.sc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  flex: none;
+}
+
+.sc-head__icon {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: transparent;
+  transition: background 160ms var(--ease), color 160ms var(--ease);
+}
+
+.sc-head__icon:hover:not(:disabled) { background: var(--surface-subtle); color: var(--text-heading); }
+.sc-head__icon:disabled { opacity: 0.45; cursor: default; }
+
+.sc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--surface-canvas);
+  box-shadow: var(--shadow-ring);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-heading);
+}
+
+.sc-badge__orb { width: 22px; height: 22px; flex: 0 0 22px; }
+.sc-badge__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--brand-green); flex: 0 0 7px; }
+
+/* ---------------------------------------------------- stream -- */
+
+.sc-stream {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+
+.sc-day {
+  align-self: center;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.003em;
+  color: var(--text-muted);
+}
+
+/* The greeting is plain text on the sheet, the way theirs is — a
+   bubble around every line makes a two-line hello look like a wall. */
+.sc-say {
+  font-size: 15px;
+  line-height: 1.45;
+  letter-spacing: -0.03em;
+  color: var(--text-heading);
+}
+
+.sc-note {
+  margin-top: 4px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  letter-spacing: -0.03em;
+  color: var(--text-muted);
+}
+
+.sc-choices { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+
+.sc-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: var(--lp-r-media);
+  background: var(--surface-canvas);
+  box-shadow: var(--shadow-ring);
+  text-align: left;
+  font-size: 14.5px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--text-heading);
+  cursor: pointer;
+  transition: background 200ms var(--ease), box-shadow 200ms var(--ease);
+}
+
+.sc-choice:hover { background: var(--surface-hover); box-shadow: var(--shadow-ring-card, var(--shadow-ring)); }
+.sc-choice svg { color: var(--text-muted); flex: 0 0 auto; }
+
+.sc-msg { display: flex; flex-direction: column; gap: 8px; max-width: 88%; }
+.sc-msg--user { align-self: flex-end; align-items: flex-end; }
+
+.sc-bubble {
+  padding: 11px 14px;
+  border-radius: var(--lp-r-media);
+  font-size: 14.5px;
+  line-height: 1.5;
+  letter-spacing: -0.03em;
+}
+
+.sc-msg--user .sc-bubble {
+  background: var(--accent);
+  color: var(--text-inverted);
+  border-bottom-right-radius: 4px;
+}
+
+.sc-msg--bot .sc-bubble {
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  border-bottom-left-radius: 4px;
+}
+
+.sc-handoff { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+
+.sc-handoff a {
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--text-muted);
+}
+
+.sc-handoff a:hover { color: var(--text-heading); }
+.sc-handoff__go { color: var(--accent) !important; }
+.sc-handoff__go:hover { color: var(--accent-hover) !important; }
+
+/* --------------------------------------------------- compose -- */
+
+.sc-compose {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px 8px;
+}
+
+.sc-compose__plus {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 999px;
+  color: var(--text-muted);
+  background: transparent;
+}
+
+.sc-compose__plus:disabled { opacity: 0.45; cursor: default; }
+
+/* The field carries the accent ring the moment it is focused, which is
+   the one place on this panel the brand colour shows up. */
+.sc-compose__field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--surface-canvas);
+  box-shadow: var(--shadow-ring);
+  transition: box-shadow 200ms var(--ease);
+}
+
+.sc-compose__field:focus-within { box-shadow: 0 0 0 1.5px var(--accent); }
+
+.sc-compose__field input {
+  width: 100%;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14.5px;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+
+.sc-compose__field input::placeholder { color: var(--text-muted); }
+
+.sc-compose__send {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  transition: background 200ms var(--ease), color 200ms var(--ease), opacity 200ms var(--ease);
+}
+
+.sc-compose__send:not(:disabled):hover { background: var(--accent); color: var(--text-inverted); }
+.sc-compose__send:disabled { opacity: 0.5; cursor: default; }
+
+.sc-foot {
+  flex: none;
+  padding: 0 16px 12px;
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: -0.003em;
+  color: var(--text-muted);
+}

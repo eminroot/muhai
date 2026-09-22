@@ -1,0 +1,299 @@
+/* ============================================================
+   Financial assistant — floating widget and chat surfaces
+   ============================================================ */
+
+/* -------------------------------------------------- launcher -- */
+
+/* Circular and ink-filled. The dock already names the assistant; this is
+   the shortcut that keeps the page you are on. */
+.chat-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 55;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background-color: var(--orb-well);
+  background-image:
+    radial-gradient(circle at 30% 24%, var(--orb-ember) 0%, transparent 44%),
+    radial-gradient(circle at 70% 22%, var(--orb-iris) 0%, transparent 30%),
+    radial-gradient(circle at 24% 70%, var(--orb-mauve) 0%, transparent 38%),
+    radial-gradient(circle at 66% 62%, var(--brand-red) 0%, transparent 64%),
+    radial-gradient(90% 70% at 30% 14%, rgba(255, 255, 255, 0.3), transparent 62%);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow-orb-wide);
+  transition: transform 160ms var(--ease), box-shadow 160ms var(--ease);
+}
+
+.chat-fab:hover { transform: scale(1.06); }
+.chat-fab__label { display: none; }
+
+/* ----------------------------------------------------- panel -- */
+
+.chat-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 70;
+  width: min(400px, calc(100vw - 32px));
+  height: min(600px, calc(100vh - 108px));
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  box-shadow: var(--shadow-3);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Below the dock's compact breakpoint the bar runs nearly the full width,
+   so both the launcher and the panel step up above it. */
+@media (max-width: 760px) {
+  .chat-fab { bottom: calc(var(--dock-clearance) - 44px); right: 16px; }
+  .chat-panel { bottom: calc(var(--dock-clearance) - 44px); right: 12px; height: min(560px, calc(100vh - 200px)); }
+}
+
+.chat-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface-2);
+}
+
+.chat-head__av {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+}
+
+.chat-head__name { font-weight: 600; font-size: 14px; letter-spacing: -0.014em; }
+.chat-head__status { font-size: 11px; color: var(--ink-3); display: flex; align-items: center; gap: 6px; }
+.chat-head__status .live-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--ok); flex: 0 0 5px; }
+
+/* ------------------------------------------- message stream -- */
+
+.chat-stream {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scroll-behavior: smooth;
+}
+
+.msg { display: flex; gap: 10px; max-width: 92%; }
+.msg--user { align-self: flex-end; flex-direction: row-reverse; }
+
+.msg__av {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  margin-top: 2px;
+}
+
+.msg__av--bot { background: var(--surface-sunken); color: var(--text-muted); }
+.msg__av--user { background: var(--accent); color: var(--text-inverted); font-size: 10.5px; font-weight: 600; }
+
+.msg__bubble {
+  padding: 11px 14px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+.msg--bot .msg__bubble { background: var(--surface-sunken); border-top-left-radius: 4px; }
+.msg--user .msg__bubble { background: var(--accent); color: var(--text-inverted); border-top-right-radius: 4px; }
+
+.msg__bubble p { margin-bottom: 7px; }
+.msg__bubble p:last-child { margin-bottom: 0; }
+.msg__bubble ul { margin: 6px 0; padding-left: 2px; list-style: none; }
+.msg__bubble li { position: relative; padding-left: 15px; margin-bottom: 4px; }
+
+.msg__bubble li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 9px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ink-4);
+}
+
+.msg__bubble strong { color: var(--ink); font-weight: 600; }
+.msg--user .msg__bubble strong { color: var(--text-inverted); }
+.msg--user .msg__bubble li::before { background: rgba(255, 255, 255, 0.55); }
+
+/* Shown when the backend answered from the local knowledge base because
+   Gemini was unreachable — the answer is real, just not model-generated. */
+.msg__offline {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 9px;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-3);
+  border: 1px solid var(--rule);
+}
+
+.msg__sources { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+.msg__source {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-2);
+  border: 1px solid var(--rule);
+}
+
+.msg__sources-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--ink-4);
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.typing { display: inline-flex; gap: 4px; padding: 4px 2px; }
+
+.typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-4);
+  opacity: 0.4;
+  animation: typing 1.2s infinite;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.18s; }
+.typing span:nth-child(3) { animation-delay: 0.36s; }
+
+@keyframes typing {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+
+.typing-hint { font-size: 11.5px; color: var(--ink-3); margin-left: 4px; }
+
+/* ------------------------------------------------ suggestions -- */
+
+.chat-suggests { display: flex; flex-direction: column; gap: 7px; margin-top: 4px; }
+
+.chat-suggest {
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 10px 13px;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  transition: border-color 140ms var(--ease), background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.chat-suggest:hover { border-color: var(--rule-hard); background: var(--surface-2); color: var(--ink); }
+.chat-suggest svg { color: var(--ink-4); flex-shrink: 0; }
+.chat-suggest:hover svg { color: var(--ink-3); }
+
+/* -------------------------------------------------- composer -- */
+
+.chat-composer { padding: 13px 16px 16px; border-top: 1px solid var(--rule); background: var(--surface); }
+
+.chat-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--rule-hard);
+  border-radius: 12px;
+  padding: 6px 6px 6px 13px;
+  transition: border-color 140ms var(--ease), box-shadow 140ms var(--ease);
+}
+
+.chat-input-row:hover { border-color: var(--ink-4); }
+.chat-input-row:focus-within { border-color: var(--ink); box-shadow: 0 0 0 3.5px var(--focus); }
+
+.chat-input-row textarea {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  resize: none;
+  font-size: 13.5px;
+  line-height: 1.5;
+  max-height: 96px;
+  padding: 6px 0;
+  color: var(--ink);
+}
+
+.chat-input-row textarea::placeholder { color: var(--ink-4); }
+
+.chat-send {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-card);
+  background: var(--accent);
+  color: var(--text-inverted);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  transition: background 140ms var(--ease), opacity 140ms var(--ease);
+}
+
+.chat-send:hover:not(:disabled) { background: color-mix(in srgb, var(--ink) 86%, var(--ink-3)); }
+.chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.chat-disclaimer { font-size: 10.5px; color: var(--ink-4); text-align: center; margin-top: 9px; line-height: 1.4; }
+
+/* -------------------------------------------- assistant page -- */
+
+.assistant-shell { display: grid; grid-template-columns: 1fr; gap: 12px; }
+
+.assistant-main {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  box-shadow: var(--shadow-1);
+  display: flex;
+  flex-direction: column;
+  /* topbar + page padding + page head, then the room the dock needs. */
+  height: calc(100vh - 250px - var(--dock-clearance));
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.assistant-main .chat-stream { padding: 26px 30px; gap: 20px; }
+.assistant-main .msg { max-width: 760px; }
+.assistant-main .chat-composer { padding: 14px 30px 18px; }
+
+@media (max-width: 700px) {
+  .assistant-main .chat-stream { padding: 18px 16px; }
+  .assistant-main .chat-composer { padding: 13px 16px 16px; }
+}

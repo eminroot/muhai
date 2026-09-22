@@ -1,0 +1,226 @@
+/* ==========================================================================
+   Dock — a magnifying bar, in the macOS manner.
+
+   Shared by the React (Dock.jsx) and the vanilla (dock.js) versions. The only
+   difference between them is who sets the tile width: framer-motion, or the
+   rAF loop in dock.js.
+
+   Dressed in the Repilay language: a glass bar held by a hairline inset ring
+   rather than a border, tiles resting on the sunken surface, and the live
+   destination in the warm accent. It is kept because a dock is a better
+   answer than a rail for a console this wide — the language is Repilay's,
+   the navigation is ours.
+
+   Tokens are read with fallbacks so this file works dropped into a project on
+   its own. Supply the real ones from references/tokens.css to get both themes.
+   ========================================================================== */
+
+:root {
+  /* The room a page must leave at its foot so nothing hides behind the dock. */
+  --dock-clearance: 148px;
+}
+
+/* The rail is a tall, invisible, click-through box. Its top padding is the
+   room the magnified tiles and their labels rise into: put a scroll container
+   any closer and the browser clips both, because an element with one axis
+   scrollable treats the other as scrollable too. */
+.dock-rail {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 20px;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 66px 12px 0;
+  pointer-events: none;
+}
+
+.dock {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 0 12px 10px;
+  border-radius: 24px;
+  border: none;
+  background: color-mix(in srgb, var(--surface, #fff) 82%, transparent);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  box-shadow: var(--shadow-glass-edge, inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(15, 23, 42, 0.07)),
+              0 24px 48px rgba(15, 23, 42, 0.12);
+  max-width: 100%;
+  pointer-events: auto;
+}
+
+:root[data-theme='dark'] .dock {
+  background: color-mix(in srgb, var(--surface, #161f33) 84%, transparent);
+  box-shadow: var(--shadow-glass-edge), 0 24px 48px rgba(0, 0, 0, 0.5);
+}
+
+.dock-sep {
+  width: 1px;
+  height: 26px;
+  flex: 0 0 1px;
+  align-self: center;
+  margin: 0 2px 8px;
+  background: var(--border-default, #e2e8f0);
+}
+
+.dock-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border: none;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--surface-sunken, #f5f7fa);
+  color: var(--text-secondary, #334155);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 160ms var(--ease, cubic-bezier(0.22, 0.8, 0.3, 1)),
+              color 160ms var(--ease, cubic-bezier(0.22, 0.8, 0.3, 1));
+}
+
+/* Without JS, or before it runs, the tiles hold the resting size. */
+.dock-item:not([style*='width']) { width: 44px; height: 44px; }
+
+.dock-item:hover { background: var(--surface-subtle, #f1f5f9); color: var(--text-heading, #1e293b); }
+.dock-item:focus-visible { outline: 2px solid var(--brand-red, #ff4d2d); outline-offset: 3px; }
+
+/* `.active` is what Dock.jsx writes; `.is-active` is friendlier in hand-written
+   markup. Both are honoured so the two versions share this file. */
+/* The live destination is the one place the accent appears in the chrome. */
+.dock-item.active,
+.dock-item.is-active {
+  background: var(--accent, #d64126);
+  color: var(--text-inverted, #fff);
+  box-shadow: var(--shadow-button, inset 0 1px 0 rgba(255, 255, 255, 0.18));
+}
+
+.dock-item.active:hover,
+.dock-item.is-active:hover { background: var(--accent, #d64126); }
+
+/* The dot under the live destination, the way a dock marks a running app. */
+.dock-item.active::after,
+.dock-item.is-active::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--accent, #d64126);
+}
+
+.dock-icon { display: grid; place-items: center; }
+.dock-icon svg { width: 100%; height: 100%; stroke-width: 1.75; }
+
+/* The vanilla version has no <DockIcon> wrapper, so the svg is sized directly. */
+.dock-item > svg { width: 42%; height: 42%; stroke-width: 1.75; }
+
+.dock-label {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: none;
+  background: var(--surface-inverted, #131c2e);
+  color: var(--text-inverted, #fff);
+  box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.28);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.006em;
+  white-space: pre;
+  pointer-events: none;
+}
+
+/* dock.js animates the tooltip itself; framer-motion animates the React one. */
+.dock-label.js {
+  opacity: 0;
+  transform: translateX(-50%) translateY(6px) scale(0.94);
+  transition: opacity 160ms var(--ease, cubic-bezier(0.22, 0.8, 0.3, 1)),
+              transform 160ms var(--ease, cubic-bezier(0.22, 0.8, 0.3, 1));
+}
+
+.dock-label.js.shown {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+/* No pointer to magnify towards down here, so the tiles hold one size and the
+   bar scrolls sideways instead. Clipping the labels costs nothing on touch. */
+@media (max-width: 760px) {
+  .dock-rail { padding: 20px 10px 0; }
+
+  .dock {
+    gap: 6px;
+    padding: 0 9px 8px;
+    border-radius: 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .dock::-webkit-scrollbar { display: none; }
+  .dock-sep { height: 22px; }
+  .dock-item:not([style*='width']) { width: 38px; height: 38px; }
+}
+
+@media (max-width: 960px) {
+  :root { --dock-clearance: 132px; }
+}
+
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  .dock { background: var(--surface, #fff); }
+  :root[data-theme='dark'] .dock { background: var(--surface, #161f33); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock-item, .dock-label { transition-duration: 0.01ms !important; }
+}
+
+/* ==========================================================================
+   Muhai addition — a count riding on a tile.
+
+   Unpaid invoices and low stock are the only two things that earn one. Slate
+   rather than red: the dock reports how much work is waiting, not that
+   something is wrong — and the accent is already spent on the live tile.
+   ========================================================================== */
+.dock-badge {
+  position: absolute;
+  top: -1px;
+  right: -3px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--text-primary, #0f172a);
+  color: var(--text-inverted, #fff);
+  border: 1.5px solid var(--surface, #fff);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 13px;
+  letter-spacing: 0;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* On the live tile the badge inverts, or it would vanish into the accent. */
+.dock-item.active .dock-badge,
+.dock-item.is-active .dock-badge {
+  background: var(--surface, #fff);
+  color: var(--accent-ink, #c53a20);
+  border-color: var(--accent, #d64126);
+}
+
+:root[data-theme='dark'] .dock-badge { border-color: var(--surface, #161f33); }
+
+@media (max-width: 760px) {
+  .dock-badge { min-width: 14px; height: 14px; font-size: 9px; line-height: 11px; }
+}

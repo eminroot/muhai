@@ -1,0 +1,61 @@
+# ============================================================
+# Development layer.
+#
+# Compose applies this automatically on top of docker-compose.yml, so a plain
+#
+#     docker compose up -d
+#
+# is the development stack: source bind-mounted, uvicorn reloading, Postgres
+# reachable from the host, and the API published on :8000 for the Vite dev
+# server to call.
+#
+# On the VPS this file must not apply. Deploy with the base file alone:
+#
+#     docker compose -f docker-compose.yml up -d --build
+#
+# (docs/DEPLOY.md wraps that in a short runbook.)
+# ============================================================
+
+services:
+  migrate:
+    # Must see the same source as the app containers below, or it applies the
+    # revisions baked into the image and the API then starts against a schema
+    # that is one migration behind — which fails at the first query, not here.
+    volumes:
+      - ./backend:/app
+    user: root
+
+  postgres:
+    ports:
+      # Bound to the loopback interface on purpose: reachable from a local
+      # client, not from the network.
+      - "127.0.0.1:5432:5432"
+
+  backend:
+    # One reloading worker instead of several fixed ones.
+    command: >
+      uvicorn app.main:app
+      --host 0.0.0.0 --port 8000
+      --reload --reload-dir /app/app
+    volumes:
+      # Live source, and with it the tests that .dockerignore keeps out of the
+      # built image (N3).
+      - ./backend:/app
+    # The image runs as an unprivileged user; development needs to write into
+    # /opt/venv to install requirements-dev.txt (N11).
+    user: root
+    ports:
+      - "8000:8000"
+    environment:
+      # No multi-worker race to avoid here, and it keeps a fresh clone working
+      # even if someone skips the `migrate` service.
+      RUN_MIGRATIONS_ON_STARTUP: "true"
+
+  web:
+    # The dev frontend is `npm --prefix web run dev` on the host, against the
+    # API on :8000. This container serves a *built* bundle, so leaving it
+    # running in development just serves something stale. Start it explicitly
+    # when you want to check the production build:
+    #
+    #     docker compose --profile ui up -d web
+    profiles: ["ui"]

@@ -1,0 +1,987 @@
+/* ============================================================
+   Page-level layouts: dashboard grid, OCR, calculator,
+   inventory bars, payroll, compliance, sheets, settings.
+   ============================================================ */
+
+/* ------------------------------------- the month's figures -- */
+
+/* One band, not four tiles. A dashboard leads with a single number, so the
+   hero gets the size and its own trend and the rest are ruled rows with
+   their values in one tabular column. A row of identical bordered cards,
+   each with an icon in a rounded square, says nothing about which figure
+   matters — and is the most templated component on the web. */
+.figures {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  padding: 0;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.figure-hero { display: flex; flex-direction: column; padding: 20px 22px 0; min-width: 0; }
+.figure-hero__head { display: flex; align-items: center; gap: 7px; color: var(--ink-3); }
+
+/* Proportional figures on purpose: tabular-nums gives every digit the width
+   of a zero, which at 44px reads loose. Tabular belongs in the column of
+   row values beside it, where the digits have to line up. */
+.figure-hero__value {
+  margin-top: 14px;
+  font-family: var(--display);
+  font-synthesis: none;
+  font-size: 42px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--text-heading);
+}
+
+.figure-hero .figure-delta { margin-top: 12px; align-self: flex-start; }
+
+/* Bleeds to the panel edge, so the trend reads as the floor of the figure
+   rather than an ornament parked in a corner. */
+.figure-hero__trend { margin: 18px -22px 0; }
+.figure-hero__trend svg { width: 100%; height: auto; display: block; }
+
+.figure-rows {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-subtle);
+}
+
+.figure-row {
+  flex: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.figure-row:last-child { border-bottom: none; }
+.figure-row__icon { color: var(--ink-4); }
+.figure-row__label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.figure-row__value {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.028em;
+  color: var(--ink);
+}
+
+.figure-row__delta { min-width: 72px; justify-content: flex-end; }
+
+/* The change is text with a glyph, not a filled badge. Four coloured pills
+   in a row is badge soup; the tone on the number says the same thing. */
+.figure-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.figure-delta.is-good { color: var(--ok); }
+.figure-delta.is-bad { color: var(--stop); }
+.figure-delta small { margin-left: 3px; font-weight: 400; color: var(--ink-3); }
+
+@media (max-width: 900px) {
+  .figures { grid-template-columns: minmax(0, 1fr); }
+  .figure-rows { border-left: none; border-top: 1px solid var(--rule); }
+  .figure-hero__value { font-size: 38px; }
+}
+
+@media (max-width: 420px) {
+  .figure-hero, .figure-row { padding-left: 16px; padding-right: 16px; }
+  .figure-hero__trend { margin-left: -16px; margin-right: -16px; }
+  .figure-row { gap: 8px; }
+  .figure-row .figure-delta small { display: none; }
+}
+
+/* -------------------------------------------- dashboard grid -- */
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-auto-flow: row;
+  gap: 12px;
+}
+
+.dash-cashflow { grid-column: 1; grid-row: 1; }
+/* The expense donut spans rows 1–2 of the right-hand column. */
+.dash-grid > .panel:nth-child(2) { grid-column: 2; grid-row: 1 / span 2; }
+.insight-card { grid-column: 1; }
+.dash-score { grid-column: 1; }
+/* Column 2 is free from row 3 down, so the alerts sit beside the score
+   instead of pushing the page taller. */
+.dash-compliance { grid-column: 2; }
+.dash-forecast { grid-column: 1 / -1; }
+.dash-invoices { grid-column: 1 / -1; padding-left: 0; padding-right: 0; }
+.dash-invoices .panel-head { padding: 0 22px 12px; }
+
+@media (max-width: 980px) {
+  .dash-grid { grid-template-columns: minmax(0, 1fr); }
+  /* A grid item's default `min-width: auto` lets the recent-invoices table
+     push the whole track to its min-content width (602px at a 375px
+     viewport), which is what made the page scroll sideways. Allowing the
+     items to shrink hands the overflow back to `.tbl-scroll`. */
+  .dash-grid > * { min-width: 0; }
+  .dash-score, .dash-forecast, .dash-compliance, .insight-card, .dash-cashflow { grid-column: 1; }
+  .dash-grid > .panel:nth-child(2) { grid-column: 1; grid-row: auto; }
+}
+
+/* ---------------------------------------------- insight card -- */
+
+/* The assistant's read on this month's figures. It was a dark gradient with
+   a glow behind it; it is a panel now, because it is a sentence of analysis
+   and not an advertisement. */
+.insight-card {
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 20px 22px;
+}
+
+.insight-card__head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.014em;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+.insight-card__icon {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  color: var(--ink-3);
+  display: grid;
+  place-items: center;
+}
+
+.insight-card__head > span:nth-child(2) { flex: 1; }
+.insight-card__body { font-size: 14px; line-height: 1.6; color: var(--ink-2); }
+
+.insight-card__action {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--accent);
+  color: var(--text-inverted);
+  box-shadow: var(--shadow-button);
+  font-weight: 500;
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border-radius: var(--r-card);
+  transition: background 140ms var(--ease);
+}
+
+.insight-card__action:hover { background: color-mix(in srgb, var(--ink) 86%, var(--ink-3)); }
+
+/* ------------------------------------------------- deadlines -- */
+
+.tax-timeline { display: flex; flex-direction: column; gap: 2px; }
+
+.tax-timeline__row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background 120ms var(--ease);
+}
+
+.tax-timeline__row:hover { background: var(--surface-2); }
+
+.tax-timeline__date {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+
+.tax-timeline__day { font-weight: 600; font-size: 16px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+
+.tax-timeline__mon {
+  font-size: 9.5px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  letter-spacing: -0.03em;
+  margin-top: 2px;
+}
+
+/* ------------------------------------------------------- OCR -- */
+
+.ocr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 900px) { .ocr-grid { grid-template-columns: 1fr; } }
+
+.ocr-dropzone {
+  border: 1px dashed var(--rule-hard);
+  border-radius: 12px;
+  background: var(--surface-2);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 160ms var(--ease), background 160ms var(--ease);
+}
+
+.ocr-dropzone:hover { border-color: var(--ink-4); }
+.ocr-dropzone--active { border-color: var(--ink); background: var(--surface-3); cursor: default; }
+
+.ocr-doc {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 3 / 3.4;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  box-shadow: var(--shadow-2);
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ocr-doc__head { display: flex; gap: 12px; margin-bottom: 16px; align-items: center; }
+.ocr-doc__logo { width: 32px; height: 32px; border-radius: 8px; background: var(--surface-3); flex-shrink: 0; }
+.ocr-doc__lines { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+
+.ocr-doc__lines span,
+.ocr-doc__row span,
+.ocr-doc__total span {
+  height: 7px;
+  border-radius: 3px;
+  background: var(--surface-3);
+  display: block;
+}
+
+.ocr-doc__row { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 11px; }
+
+.ocr-doc__total {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule-hard);
+}
+
+.ocr-doc__total span { height: 9px; background: var(--ink-4); }
+
+/* The scan line is the one moving thing on the page, so it is ink. */
+.ocr-scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--ink), transparent);
+  opacity: 0.7;
+}
+
+.ocr-doc--image {
+  padding: 0;
+  aspect-ratio: auto;
+  max-width: 320px;
+  width: 100%;
+  max-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+}
+
+.ocr-doc--image img { width: 100%; height: auto; max-height: 360px; object-fit: contain; display: block; }
+
+.ocr-doc__check {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--ok);
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  backdrop-filter: blur(1px);
+}
+
+.ocr-doc__check svg { background: var(--surface); border-radius: 50%; padding: 4px; box-shadow: var(--shadow-2); }
+
+.ocr-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-3);
+  margin: 12px auto 0;
+  overflow: hidden;
+  max-width: 240px;
+}
+
+.ocr-progress__bar { height: 100%; border-radius: 999px; background: var(--ink); }
+
+.ocr-rawtext { margin-top: 16px; border-top: 1px solid var(--rule); padding-top: 12px; }
+
+.ocr-rawtext summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  letter-spacing: -0.03em;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ocr-rawtext summary::before { content: '›'; transition: transform 160ms var(--ease); display: inline-block; }
+.ocr-rawtext[open] summary::before { transform: rotate(90deg); }
+
+.ocr-rawtext pre {
+  margin-top: 10px;
+  max-height: 180px;
+  overflow: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--ink-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+}
+
+.ocr-box { position: absolute; border: 1.5px solid var(--ink); border-radius: 3px; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+
+.ocr-hint { display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--ink-3); text-align: center; }
+.ocr-hint > svg { color: var(--ink-4); }
+.ocr-hint span { font-weight: 550; color: var(--ink); font-size: 14px; }
+.ocr-hint small { font-size: 12px; color: var(--ink-4); }
+.ocr-status { display: inline-flex; align-items: center; gap: 9px; font-weight: 600; color: var(--ink) !important; }
+.ocr-status--done { color: var(--ok) !important; }
+
+.ocr-spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--rule-hard);
+  border-top-color: var(--ink);
+  animation: muhai-spin 620ms linear infinite;
+}
+
+.ocr-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 50px 20px;
+  color: var(--ink-4);
+  text-align: center;
+}
+
+.ocr-empty p { font-size: 13px; max-width: 220px; }
+.ocr-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.ocr-fields > :first-child { grid-column: 1 / -1; }
+
+.ocr-field {
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 10px 13px;
+}
+
+.ocr-field__label {
+  display: block;
+  font-size: 12px;
+  letter-spacing: -0.03em;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.ocr-field__value { font-weight: 550; color: var(--ink); font-size: 14px; }
+.ocr-items { display: flex; flex-direction: column; gap: 1px; margin-bottom: 14px; }
+
+.ocr-item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.ocr-item:hover { background: var(--surface-2); }
+.ocr-summary { border-top: 1px solid var(--rule); padding-top: 12px; }
+.ocr-row { display: flex; justify-content: space-between; padding: 5px 12px; font-size: 13.5px; color: var(--ink-2); }
+
+.ocr-row--total {
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 15px;
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px solid var(--rule);
+}
+
+.ocr-row--total .mono { color: var(--ink); font-size: 14px; }
+
+/* -------------------------------------------- tax calculator -- */
+
+.tax-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 1000px) { .tax-grid { grid-template-columns: minmax(0, 1fr); } }
+
+.calc-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  letter-spacing: -0.03em;
+  margin-bottom: 8px;
+}
+
+.calc-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-sunken);
+  border: none;
+  border-radius: var(--lp-r-media);
+  padding: 10px 14px;
+  transition: box-shadow 200ms var(--ease), background 200ms var(--ease);
+}
+
+.calc-input:hover { background: var(--surface-subtle); }
+.calc-input:focus-within { background: var(--surface-sunken); box-shadow: 0 0 0 2px var(--brand-red); }
+.calc-input span { color: var(--text-muted); font-weight: 500; font-size: 17px; }
+
+.calc-input input {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: none;
+  outline: none;
+  font-family: var(--display);
+  font-synthesis: none;
+  font-size: 21px;
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-rates { display: flex; gap: 6px; }
+
+.calc-rate {
+  flex: 1;
+  padding: 9px;
+  border-radius: var(--r-card);
+  font-weight: 500;
+  font-size: 13.5px;
+  background: var(--surface-sunken);
+  border: none;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  transition: background 140ms var(--ease), color 140ms var(--ease), border-color 140ms var(--ease);
+}
+
+.calc-rate:hover { border-color: var(--ink-4); background: var(--surface-2); }
+.calc-rate--active { background: var(--accent); color: var(--text-inverted); box-shadow: var(--shadow-button); }
+.calc-rate--active:hover { background: var(--accent-hover); color: var(--text-inverted); }
+
+.calc-results {
+  margin-top: 20px;
+  border-top: 1px solid var(--rule);
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.calc-result { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: 13.5px; color: var(--ink-2); }
+.calc-result .mono { font-weight: 550; color: var(--ink); font-size: 14px; }
+
+.calc-result--total {
+  border-top: 1px solid var(--rule);
+  margin-top: 6px;
+  padding-top: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.calc-result--total .mono { font-size: 18px; letter-spacing: -0.03em; }
+
+.kdv-rows { display: flex; flex-direction: column; }
+
+.kdv-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 13.5px;
+  color: var(--ink-2);
+}
+
+.kdv-row strong { font-size: 14.5px; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.kdv-row--total {
+  border-bottom: none;
+  border-top: 1px solid var(--rule-hard);
+  margin-top: 4px;
+  padding-top: 14px;
+}
+
+.kdv-row--total span { font-weight: 600; color: var(--ink); }
+.kdv-row--total strong { font-size: 20px; letter-spacing: -0.036em; }
+
+/* ------------------------------------------------- inventory -- */
+
+.inv-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 12px; }
+@media (max-width: 900px) { .inv-grid { grid-template-columns: 1fr; } }
+
+.hbar-list { display: flex; flex-direction: column; gap: 15px; }
+.hbar__top { display: flex; justify-content: space-between; margin-bottom: 7px; }
+.hbar__name { font-size: 13px; font-weight: 550; color: var(--ink-2); }
+.hbar__val { font-size: 13px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.hbar__track { height: 6px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.hbar__fill { height: 100%; border-radius: 999px; background: var(--ink); }
+
+/* --------------------------------------------------- payroll -- */
+
+.pay-grid { display: grid; grid-template-columns: 1fr 1.6fr; gap: 12px; }
+@media (max-width: 900px) { .pay-grid { grid-template-columns: 1fr; } }
+
+/* The month's run. It was a green gradient card; the figures are the point,
+   so it is a panel with the numbers set large. */
+.run-card {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 20px 22px;
+  box-shadow: var(--shadow-1);
+}
+
+.run-card__top { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.run-card__title { font-size: 20px; font-weight: 600; letter-spacing: -0.028em; color: var(--ink); }
+.run-card__sub { color: var(--ink-3); font-size: 13px; margin-top: 5px; }
+.run-card__meta { display: flex; gap: 28px; margin: 20px 0; flex-wrap: wrap; }
+
+.run-card__meta-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--text-tertiary);
+  margin-bottom: 6px;
+}
+
+.run-card__meta-val { font-size: 24px; font-weight: 600; letter-spacing: -0.036em; font-variant-numeric: tabular-nums; }
+
+.pay-breakdown { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+@media (max-width: 560px) { .pay-breakdown { flex-direction: column; } }
+
+.emp-av {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  flex-shrink: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+/* ------------------------------------------------- assistant -- */
+
+.rag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: var(--surface-2);
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+}
+
+.rag-badge svg { color: var(--ink-3); }
+
+.assistant-suggest-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 760px; margin-top: 8px; }
+@media (max-width: 600px) { .assistant-suggest-grid { grid-template-columns: 1fr; } }
+
+/* ------------------------------------------- compliance rows -- */
+
+.alert-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+.alert-row {
+  display: flex;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.alert-row__mark { width: 2px; border-radius: 999px; background: var(--ink-4); flex: none; }
+.alert-row--high .alert-row__mark { background: var(--stop); }
+.alert-row--medium .alert-row__mark { background: var(--warn); }
+.alert-row--low .alert-row__mark { background: var(--ink-4); }
+.alert-row__body { flex: 1; min-width: 0; }
+
+.alert-row__head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
+  color: var(--ink-3);
+  /* In the 1fr column the row is ~255px wide. Let the severity pill drop to
+     its own line rather than squeezing the label into two. */
+  flex-wrap: wrap;
+}
+
+.alert-row--high .alert-row__head { color: var(--stop); }
+.alert-row--medium .alert-row__head { color: var(--warn); }
+.alert-row__type { font-size: 12.5px; font-weight: 600; letter-spacing: -0.01em; }
+.alert-row__head .badge { margin-left: auto; }
+
+.alert-row__text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  /* Vendor names and invoice numbers arrive unbroken; the card must not
+     stretch the grid column to fit one of them. */
+  overflow-wrap: anywhere;
+}
+
+.alert-row .link-btn { margin-top: 6px; flex-wrap: wrap; }
+/* An invoice number is full of hyphens, every one a break opportunity.
+   Keep it whole and let the label wrap above it instead. */
+.alert-row__ref { white-space: nowrap; }
+
+.alert-clean {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 15px 14px;
+  border-radius: 10px;
+  background: var(--ok-bg);
+  border: 1px solid var(--ok-line);
+  color: var(--ok);
+  font-size: 13.5px;
+  font-weight: 550;
+}
+
+.alert-more { margin-top: 12px; font-size: 12.5px; color: var(--ink-3); }
+
+/* --------------------------------------------------- toolbar -- */
+
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.toolbar__spacer { flex: 1; }
+
+/* Segmented control, for the small either/or choices. */
+.seg {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  border: none;
+  border-radius: var(--r-panel);
+  background: var(--surface-sunken);
+}
+
+.seg button {
+  padding: 5px 11px;
+  border-radius: var(--r-control);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 140ms var(--ease), color 140ms var(--ease);
+}
+
+.seg button:hover { color: var(--text-heading); }
+.seg button.is-active { background: var(--surface); color: var(--text-heading); font-weight: 600; box-shadow: var(--shadow-ring); }
+
+@media (max-width: 760px) {
+  /* The invoice filter row is five Turkish labels — 389px against a 341px
+     panel, which pushed the whole page sideways. The control scrolls
+     instead. Wrapping was the other option but it breaks the pill into
+     ragged rows and loses the segmented-control affordance. */
+  .seg { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .seg::-webkit-scrollbar { display: none; }
+  .seg button { flex-shrink: 0; }
+}
+
+.search-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface-sunken);
+  border: none;
+  border-radius: var(--r-control);
+  padding: 0 12px;
+  height: 34px;
+  color: var(--text-muted);
+  min-width: 210px;
+  transition: box-shadow 200ms var(--ease), background 200ms var(--ease);
+}
+
+.search-inline:hover { background: var(--surface-subtle); }
+.search-inline:focus-within { background: var(--surface-sunken); box-shadow: 0 0 0 2px var(--brand-red); }
+
+.search-inline input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  letter-spacing: -0.006em;
+  color: var(--text-primary);
+  width: 100%;
+  min-width: 0;
+}
+
+/* ---------------------------------------------------- sheets -- */
+
+/* A side sheet, not a centred modal: it keeps the list behind it visible,
+   so you can see what you are acting on. */
+.modal-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.32);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 200;
+  animation: sheet-fade 160ms ease-out;
+}
+
+.modal {
+  width: min(560px, 100%);
+  height: 100%;
+  background: var(--surface);
+  border-left: none;
+  border-radius: var(--r-tray) 0 0 var(--r-tray);
+  box-shadow: var(--shadow-3);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: sheet-in 200ms var(--ease) both;
+}
+
+@keyframes sheet-in { from { transform: translateX(24px); } to { transform: none; } }
+
+.modal--wide { width: min(680px, 100%); }
+
+.modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal__title {
+  font-family: var(--display);
+  font-synthesis: none;
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--text-heading);
+}
+
+.modal__sub { font-size: 13.5px; letter-spacing: -0.03em; color: var(--text-body); margin-top: 6px; }
+.modal__body { padding: 24px 30px; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+
+/* The invoice editor wraps its body and footer in a <form>, so the growth has
+   to be handed through it or the actions float in the middle of the sheet. */
+.modal > form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+.modal__foot {
+  margin-top: auto;
+  padding: 18px 28px 26px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  border-top: 1px solid var(--border-subtle);
+}
+
+@keyframes sheet-fade { from { opacity: 0; } }
+
+@media (max-width: 560px) {
+  .modal__head { padding: 20px 18px 16px; }
+  .modal__body { padding: 18px; }
+  .modal__foot { padding: 16px 18px 22px; }
+}
+
+/* --------------------------------------------- summary strip -- */
+
+.mini-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  background: var(--surface-tray);
+  box-shadow: inset 0 0 0 1px var(--tray-ring);
+  border-radius: var(--r-tray);
+  padding: 8px;
+}
+
+.mini-stats__item { background: var(--surface); border-radius: var(--r-card); padding: 14px 16px; }
+
+.mini-stats__label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  letter-spacing: -0.03em;
+}
+
+.mini-stats__value {
+  font-family: var(--display);
+  font-synthesis: none;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--text-heading);
+  margin-top: 6px;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.mini-stats__value--pos { color: var(--tag-green-ink); }
+.mini-stats__value--neg { color: var(--tag-red-ink); }
+
+/* ---------------------------------------------- review queue -- */
+
+.review-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  border-radius: var(--r-panel);
+  background: var(--tag-amber-tint);
+  border: none;
+  color: var(--tag-amber-ink);
+  font-size: 13.5px;
+  letter-spacing: -0.006em;
+  margin-bottom: 18px;
+}
+
+.review-banner__spacer { flex: 1; }
+
+/* A per-field OCR confidence, so it reads as machine output. */
+.conf {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
+.conf--ok { background: var(--tag-slate-tint); color: var(--tag-slate-ink); }
+.conf--low { background: var(--tag-amber-tint); color: var(--tag-amber-ink); }
+
+/* A field the OCR was unsure about, waiting on a human. */
+.field--flag .field__wrap { background: var(--tag-amber-tint); }
+.field--flag .field__label { color: var(--tag-amber-ink); }
+
+.raw-text {
+  border: none;
+  border-radius: var(--r-panel);
+  background: var(--surface-sunken);
+  padding: 12px 14px;
+}
+
+.raw-text summary { cursor: pointer; font-size: 13px; font-weight: 550; color: var(--ink-2); user-select: none; }
+
+.raw-text pre {
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--ink-3);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+/* -------------------------------------------------- settings -- */
+
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+@media (max-width: 980px) { .settings-grid { grid-template-columns: 1fr; } }
+
+/* Vendor → category, as taught by the company's own corrections. */
+.learned-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  /* A busy company can teach it hundreds of vendors; the panel must not
+     grow without bound. */
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.learned-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 13px;
+}
+
+.learned-row__vendor {
+  flex: 1;
+  min-width: 0;
+  font-weight: 550;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.learned-row__cat { color: var(--ink-3); flex: none; }
+
+.learned-row__flag {
+  flex: none;
+  font-size: 10.5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--rule);
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.learned-empty { font-size: 13px; color: var(--ink-3); line-height: 1.5; }
+
+@media (max-width: 560px) {
+  .learned-row { flex-wrap: wrap; }
+  .learned-row__vendor { flex-basis: 100%; }
+}
